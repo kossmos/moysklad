@@ -29,7 +29,11 @@ License: GPL2
 
 namespace MoySklad;
 
-use MoySklad\Entity\Customerorder;
+
+use MoySklad\Entity\Customerorder; // указывать с файлом!!!
+use MoySklad\Dev\Dev;
+use MoySklad\Includes\Curl;
+
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -38,185 +42,65 @@ require_once('autoload.php'); // require_once( trailingslashit( dirname( __FILE_
 
 class MoySklad {
 	const // protected: only php 7.1
-		ORGANIZATION = "13942c3b-586c-11e5-90a2-8ecb0037b09d",
-		AUTH_LOGIN = "admin@shopclay",
-		AUTH_PASSWORD = "649d40e23b";
+		ORGANIZATION = '13942c3b-586c-11e5-90a2-8ecb0037b09d';
 
-	private 
-    	$endpoint = "https://online.moysklad.ru/api/remap/1.1";
+	public
+		$mediaType = 'application/json';
 
 	function __construct() { // последовательность выполнения в конструкторе важна
+		add_action('woocommerce_order_items_table', [$this, 'customerorder']); // создаём заказ
+
 	}
 
-	protected function curl($url, $type, $data) {
-		$url = $this->endpoint . $url;
-		$ch = curl_init($url);
+	public function customerorder($order) {
+		$stateId = '13a21e7b-586c-11e5-90a2-8ecb0037b0b7'; // id статуса заказа "Новый"
 
-		$header = ["Authorization: Basic " . base64_encode(self::AUTH_LOGIN . ":" . self::AUTH_PASSWORD)];
-
-		if ($type == "post") {
-			array_push($header, 'Content-Type:application/json');
-
-			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-		}
-
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-
-		$this->curlLog($ch);
-
-		$return = curl_exec($ch);
-
-		curl_close($ch);
-
-		return $return;
-	}
-
-	public function customerorder($array) {
 		$data = [
-			"name" => (string) $array["id"],
-			"moment" => $array["date"], // Дата Заказа
-			"description" => $array["description"], // Комментарий Заказа покупателя
-			"state" => $this->state("13a21e7b-586c-11e5-90a2-8ecb0037b0b7"), // Статус Заказа в формате Метаданных
-			// "attributes" => $this->sourceOrder(), // Источник заказа только один "Сайт"
-			// "attributes" => new Attributes($this->endpoint), // Источник заказа только один "Сайт"
-			"organization" => $this->meta("organization", self::ORGANIZATION), // Ссылка на ваше юрлицо в формате Метаданных
-			"agent" => $this->meta("counterparty", "4ef2f677-e8e1-11e5-7a69-97110007f2b2"), // Ссылка на контрагента (покупателя) в формате Метаданных
+			'name'         => (string) $order->id, // or $order->get_order_number()
+			'moment'       => $order->order_date, // Дата Заказа
+			'description'  => $order->customer_note, // Комментарий Заказа покупателя
+			'state'        => $this->meta('state', 'customerorder/metadata/states/' . $stateId), // Статус Заказа в формате Метаданных
+			'organization' => $this->meta('organization', 'organization/' . self::ORGANIZATION), // Ссылка на ваше юрлицо в формате Метаданных
+			'agent'        => $this->meta('counterparty', 'counterparty/4ef2f677-e8e1-11e5-7a69-97110007f2b2'), // Ссылка на контрагента (покупателя) в формате Метаданных
+			'attributes'   => $this->attributes(), // Источник заказа только один - "Сайт"
 			// "positions" => [], // Ссылка на позиции в Заказе в формате Метаданных
 		];
 
-		echo "<pre>";
-		echo __NAMESPACE__ . "<br>";
-		echo __FUNCTION__ . "<br>";
-		echo __METHOD__ . "<br>";
-		echo __CLASS__ . "<br>";
-		var_dump(json_encode($data));
-		var_dump($data);
-		echo "</pre>";
-
-		$this->curl('/entity/' . __FUNCTION__, "post", $data);
+		new Curl('/entity/' . __FUNCTION__, 'post', $data);
 	}
 
-	/*
-	private function sourceOrder() {
-		return [[
-			"id" => "f24606de-e9ce-11e5-7a69-9711001c4539",
-			"value" => [
-				"meta" => [
-					"href" => "{$this->endpoint}/entity/customentity/e2f7dbb8-e9ce-11e5-7a69-8f55001c001b/064e93cc-e9cf-11e5-7a69-9711001c49b7",
-					"metadataHref" => "{$this->endpoint}/entity/companysettings/metadata/customEntities/e2f7dbb8-e9ce-11e5-7a69-8f55001c001b",
-					"type" => "customentity",
-					"mediaType" => "application/json"
-				]
+	private function meta($type, $url) {
+		return [
+			'meta' => [
+				'href' => Curl::END_POINT . '/entity' . $url,
+				'type' => $type,
+				'mediaType' => $this->mediaType
 			]
+		];
+	}
+
+	/**
+	 * Отмечаем дополнительное поле в заказе "Источник заказа" -> "Сайт"
+	 * GET https://online.moysklad.ru/api/remap/1.1/entity/customentity/e2f7dbb8-e9ce-11e5-7a69-8f55001c001b для получения пользовательского справочника (всех значений этого дополнительного поля "Источник заказа")
+	 * GET https://online.moysklad.ru/api/remap/1.1/entity/customentity/e2f7dbb8-e9ce-11e5-7a69-8f55001c001b/064e93cc-e9cf-11e5-7a69-9711001c49b7 для получения сущности пользовательского справочника "Сайт"
+	 * customentity это "Пользовательский справочник"
+	 * @url https://online.moysklad.ru/api/remap/1.1/doc/index.html#пользовательский-справочник-пользовательские-справочники
+	 * @return [array]
+	 */
+	private function attributes() { // Источник заказа только один - "Сайт"
+		$id             = '064e93cc-e9cf-11e5-7a69-9711001c49b7'; // это id сущности пользовательского справочника "Сайт"
+		$customentityId = 'e2f7dbb8-e9ce-11e5-7a69-8f55001c001b'; // это пользовательского справочника "Источник заказа" (customEntityMeta id дополнительного поля (attributes) "Источник заказа")
+		$metaId         = 'f24606de-e9ce-11e5-7a69-9711001c4539'; // это meta id дополнительного поля (attributes) "Источник заказа"
+		$meta           = $this->meta('customentity', $customentityId . '/' . $id);
+
+		$meta['meta']['metadataHref'] = Curl::END_POINT . '/entity/companysettings/metadata/customEntities/' . $customentityId;
+
+		return [[
+			'id' => $metaId,
+			'value' => $meta // это метаднные варианта "Сайт" дополнительного поля (attributes) "Источник заказа"
 		]];
 	}
-	*/
-
-	private function meta($type, $id) {
-		return [
-			"meta" => [
-				"href" => "{$this->endpoint}/entity/{$type}/$id",
-				"type" => $type,
-				"mediaType" => "application/json"
-			]
-		];
-	}
-
-	private function state($id) {
-		return [
-			"meta" => [
-				"href" => "{$this->endpoint}/entity/customerorder/metadata/states/$id",
-				"type" => "state",
-				"mediaType" => "application/json"
-			]
-		];
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function delete() {}
-
-	public function put() {}
-	
-	private function curlLog($ch) {
-		$info = curl_getinfo($ch);
-		$return = curl_exec($ch);
-
-		echo '<pre>';
-			var_dump($info['url']);
-			// var_dump($return);
-			// var_dump(json_decode($return, true));
-		echo '</pre>';
-
-		debug_log_filter(json_decode($return), "../../../debug-moysclad.log", true);
-		
-		$this->JSONError();
-	}
-
-	private function JSONError() {
-		switch (json_last_error()) {
-			case JSON_ERROR_NONE:
-				echo ' - Ошибок нет';
-			break;
-			case JSON_ERROR_DEPTH:
-				echo ' - Достигнута максимальная глубина стека';
-			break;
-			case JSON_ERROR_STATE_MISMATCH:
-				echo ' - Некорректные разряды или не совпадение режимов';
-			break;
-			case JSON_ERROR_CTRL_CHAR:
-				echo ' - Некорректный управляющий символ';
-			break;
-			case JSON_ERROR_SYNTAX:
-				echo ' - Синтаксическая ошибка, не корректный JSON';
-			break;
-			case JSON_ERROR_UTF8:
-				echo ' - Некорректные символы UTF-8, возможно неверная кодировка';
-			break;
-			default:
-				echo ' - Неизвестная ошибка';
-			break;
-		}
-
-		echo PHP_EOL;
-	}
-
 }
 
 
 new MoySklad();
-
-/*
-echo '<pre>';
-	// var_dump($array['brand'][$_REQUEST['brand']]);
-	// var_dump($array[SC_FILTER::taxonomy][$this->parce_url[1]]);
-	// var_dump($string);
-	var_dump($_SERVER);
-	var_dump($category, $brand);
-echo '</pre>';
-
-
-// curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
-// curl_setopt($ch, CURLOPT_HEADER, 1);
-// curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-// curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
-// curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-// curl_setopt($ch, CURLOPT_USERPWD, self::AUTH_LOGIN . ":" . self::AUTH_PASSWORD); // or
-
-*/
