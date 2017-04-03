@@ -59,12 +59,27 @@ class MoySklad {
 			'name'         => (string) $order->id, // or $order->get_order_number()
 			'moment'       => $order->order_date, // Дата Заказа
 			'description'  => $order->customer_note, // Комментарий Заказа покупателя
-			'state'        => $this->meta('state', 'customerorder/metadata/states/' . $stateId), // Статус Заказа в формате Метаданных
-			'organization' => $this->meta('organization', 'organization/' . self::ORGANIZATION), // Ссылка на ваше юрлицо в формате Метаданных
-			'agent'        => $this->meta('counterparty', 'counterparty/4ef2f677-e8e1-11e5-7a69-97110007f2b2'), // Ссылка на контрагента (покупателя) в формате Метаданных
+			'state'        => $this->meta('state', '/customerorder/metadata/states/' . $stateId), // Статус Заказа в формате Метаданных
+			'organization' => $this->meta('organization', '/organization/' . self::ORGANIZATION), // Ссылка на ваше юрлицо в формате Метаданных
+			'agent'        => $this->meta('counterparty', '/counterparty/4ef2f677-e8e1-11e5-7a69-97110007f2b2'), // Ссылка на контрагента (покупателя) в формате Метаданных
 			'attributes'   => $this->attributes(), // Источник заказа только один - "Сайт"
-			// "positions" => [], // Ссылка на позиции в Заказе в формате Метаданных
+			"positions" => [] // Ссылка на позиции в Заказе в формате Метаданных
 		];
+
+		foreach ($order->get_items() as $item_id => $item) :
+			$_product = apply_filters('woocommerce_order_item_product', $order->get_product_from_item($item), $item);
+
+			array_push($data['positions'], [
+				'quantity' => (int) $item['qty'],
+				'price'    => (int) $_product->get_price()*100, // Цена товара/услуги в копейках
+				'reserve'  => (int) $item['qty'],
+				'assortment' => $this->meta('product', '/product/' . get_field('moysklad_id', $item['product_id']))
+			]);
+		endforeach;
+
+		// echo '<pre>';
+		// var_dump(get_field('moysklad_id', $item['product_id'])); //
+		// echo '</pre>';
 
 		new Curl('/entity/' . __FUNCTION__, 'post', $data);
 	}
