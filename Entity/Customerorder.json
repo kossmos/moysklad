@@ -118,7 +118,7 @@
 	"code": "1243521",
 	"moment": "2016-04-19 13:50:24", // Дата Заказа
 	"applicable": false, // Отметка о проведении
-	"vatEnabled": false, // Учитывается ли НДС 
+	"vatEnabled": false, // Учитывается ли НДС
 	"agent": {
 		"meta": {
 			"href": "https://online.moysklad.ru/api/remap/1.1/entity/counterparty/9794d400-f689-11e5-8a84-bae500000078",
@@ -135,18 +135,18 @@
 	},
 	"positions": [
 		{
-			"quantity": 10,
-			"price": 100,
-			"discount": 0,
-			"vat": 0,
-			"assortment": {
+			"quantity": 10, // Количество товаров/услуг данного вида в позиции
+			"price": 100, // Цена товара/услуги в копейках
+			"discount": 0, // Процент скидки или наценки. Наценка указывается отрицательным числом, т.е. -10 создаст наценку в 10%
+			"vat": 0, // НДС, которым облагается текущая позиция
+			"assortment": { // Ссылка на товар/услугу/серию/модификацию, которую представляет собой позиция
 				"meta": {
 					"href": "https://online.moysklad.ru/api/remap/1.1/entity/product/8b382799-f7d2-11e5-8a84-bae5000003a5",
 					"type": "product",
 					"mediaType": "application/json"
 				}
 			},
-			"reserve": 10
+			"reserve": 10 // Резерв данной позиции
 		},
 		{
 			"quantity": 20,
