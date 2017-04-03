@@ -1,4 +1,8 @@
 <?php
+/**
+ * Заказы
+ * @url https://online.moysklad.ru/api/remap/1.1/doc/index.html#документ-заказ-покупателя
+ */
 
 namespace MoySklad\Entity;
 
@@ -21,6 +25,7 @@ class Customerorder {
 	}
 
 	public function customerorder($order) {
+		$curl = new Curl();
 		$stateId = '13a21e7b-586c-11e5-90a2-8ecb0037b0b7'; // id статуса заказа "Новый"
 
 		$data = [
@@ -29,12 +34,12 @@ class Customerorder {
 			'description'  => $order->customer_note, // Комментарий Заказа покупателя
 			'state'        => $this->meta('state', '/customerorder/metadata/states/' . $stateId), // Статус Заказа в формате Метаданных
 			'organization' => $this->meta('organization', '/organization/' . self::ORGANIZATION), // Ссылка на ваше юрлицо в формате Метаданных
-			'agent'        => $this->meta('counterparty', '/counterparty/4ef2f677-e8e1-11e5-7a69-97110007f2b2'), // Ссылка на контрагента (покупателя) в формате Метаданных
+			'agent'        => $this->meta('counterparty', '/counterparty/' . Counterparty::$customerorderUserId), // Ссылка на контрагента (покупателя) в формате Метаданных
 			'attributes'   => $this->attributes(), // Источник заказа только один - "Сайт"
 			"positions"    => $this->positions($order) // Ссылка на позиции в Заказе в формате Метаданных
 		];
 
-		new Curl('/entity/' . __FUNCTION__, 'post', $data);
+		$result = $curl->init('/entity/' . __FUNCTION__, 'post', $data);
 	}
 
 

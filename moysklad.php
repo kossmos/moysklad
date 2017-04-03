@@ -32,7 +32,9 @@ namespace MoySklad;
 
 // use MoySklad\Dev\Dev;
 // use MoySklad\Includes\Curl;
-use MoySklad\Entity\Customerorder; // указывать с файлом!!!
+// use MoySklad\Search\Search;
+use MoySklad\Entity\Counterparty; // Контрагенты
+use MoySklad\Entity\Customerorder; // Заказы
 
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
@@ -42,7 +44,8 @@ require_once('autoload.php'); // require_once( trailingslashit( dirname( __FILE_
 
 class MoySklad {
 	function __construct() { // последовательность выполнения в конструкторе важна
-		add_action('woocommerce_order_items_table', [new Customerorder(), 'customerorder']); // создаём заказ
+		add_action('woocommerce_order_items_table', [new Counterparty(), 'counterparty'], 5); // ищем пользователя
+		add_action('woocommerce_order_items_table', [new Customerorder(), 'customerorder'], 10); // создаём заказ
 	}
 }
 
