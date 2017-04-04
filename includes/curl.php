@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 
 class Curl {
+
+
 	const // protected: only php 7.1
     	END_POINT = 'https://online.moysklad.ru/api/remap/1.1';
 
@@ -20,8 +22,6 @@ class Curl {
 	}
 
 	protected function curl($url, $type, $data) {
-		$start = microtime(true);
-
 		$url = self::END_POINT . $url;
 		$ch = curl_init($url);
 
@@ -42,16 +42,15 @@ class Curl {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
-		Dev::logDisplay($ch);
+		// Dev::logDisplay($ch);
 		Dev::logFile($ch);
 
 		$return = curl_exec($ch);
 
 		curl_close($ch);
 
-		$time = microtime(true) - $start;
-		printf('%.4F сек.', $time);
-
 		return json_decode($return, true);
 	}
+
+
 }

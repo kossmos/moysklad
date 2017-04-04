@@ -1,7 +1,7 @@
 <?php
 /**
- * Заказы
- * @url https://online.moysklad.ru/api/remap/1.1/doc/index.html#документ-заказ-покупателя
+ * Контрагенты
+ * @url https://online.moysklad.ru/api/remap/1.1/doc/index.html#контрагент
  */
 
 namespace MoySklad\Entity;
@@ -15,7 +15,10 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 
 class Counterparty {
+
+
 	private
+		$tags,
 		$attributes;
 
 	public static
@@ -25,6 +28,7 @@ class Counterparty {
 		$config = new Config();
 
 		$this->attributes = $config->attributes();
+		$this->tags = $config->tags();
 	}
 
 	public function counterparty($order) {
@@ -40,12 +44,14 @@ class Counterparty {
 
 			$curl->init('/entity/' . __FUNCTION__ . '/' . self::$customerorderUserId, 'put', $data); // обновляем пользователя
 		endif;
-
-		echo '<pre>';
-		var_dump($data);
-		echo '</pre>';
 	}
 
+	/**
+	 * Данные пользователя из заказа
+	 * TODO мне вообще не нравится идея обновлять поля в складе напрямую из нового заказа, надо будет что-то придумать
+	 * @param  [object] $order 	Объект заказа
+	 * @return [array]			Данные пользователя
+	 */
 	private function dataNewUser($order) {
 		$country = WC()->countries->countries[$order->billing_country];
 
@@ -54,10 +60,7 @@ class Counterparty {
 			'email' => $order->billing_email,
 			'phone' => $order->billing_phone,
 			'actualAddress' => trim($order->billing_postcode . ', ' . $order->billing_state . ', ' . $country . ', ' . $order->billing_city . ', ' . $order->billing_address_1 . ', ' . $order->billing_address_2, ', \t\n\r\0\x0B'),
-			'tags' => [
-				'розничный покупатель',
-				'сайт'
-			],
+			'tags' => $this->tags,
 			'attributes' => []
 		];
 
@@ -86,8 +89,8 @@ class Counterparty {
 	}
 
 	/**
-	 * @param  [string] $value значение доп. поля
-	 * @return [array]        массив дополнительных полей контрагента
+	 * @param  [string] $value 	Значение доп. поля
+	 * @return [array] 			Массив дополнительных полей контрагента
 	 */
 	private function dataAttributes($type, $value) {
 		$array = $this->attributes[$type];
@@ -96,9 +99,6 @@ class Counterparty {
 
 		return $array;
 	}
+
+
 }
-
-
-
-
-// echo 'Customerorder > ' . __NAMESPACE__ . ' > ' . __CLASS__;

@@ -14,6 +14,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 
 class Customerorder {
+
+
 	const // protected: only php 7.1
 		ORGANIZATION = '13942c3b-586c-11e5-90a2-8ecb0037b09d';
 
@@ -21,7 +23,6 @@ class Customerorder {
 		$mediaType = 'application/json';
 
 	function __construct() {
-		// echo 'Customerorder > ' . __NAMESPACE__ . ' > ' . __CLASS__;
 	}
 
 	public function customerorder($order) {
@@ -91,11 +92,6 @@ class Customerorder {
 			'value' => $meta // это метаднные варианта "Сайт" дополнительного поля (attributes) "Источник заказа"
 		]];
 	}
+
+
 }
-
-
-
-
-// echo '<pre>';
-// var_dump($data);
-// echo '</pre>';

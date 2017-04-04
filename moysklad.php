@@ -2,8 +2,8 @@
 /*
 Plugin Name: MoySklad
 Plugin URI: https://github.com/kossmos/moysklad/
-Description: Wordpress плагин для интеграции moysklad api
-Version: 1.0
+Description: Wordpress плагин для интеграции сервиса МойСклад (moysklad) с магазином на WooCommerce
+Version: 0.1.0
 Author: Юрий «kossmos» Кравчук
 Author URI: https://kossmos.space
 License: GPL2
@@ -30,23 +30,24 @@ License: GPL2
 namespace MoySklad;
 
 
-// use MoySklad\Dev\Dev;
-// use MoySklad\Includes\Curl;
-// use MoySklad\Search\Search;
-use MoySklad\Entity\Counterparty; // Контрагенты
-use MoySklad\Entity\Customerorder; // Заказы
+use MoySklad\Entity\Counterparty; 	// Контрагенты
+use MoySklad\Entity\Customerorder; 	// Заказы
 
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-require_once('autoload.php'); // require_once( trailingslashit( dirname( __FILE__ ) ) . 'inc/autoloader.php' );
+require_once('autoload.php');
 
 
 class MoySklad {
+
+
 	function __construct() { // последовательность выполнения в конструкторе важна
-		add_action('woocommerce_order_items_table', [new Counterparty(), 'counterparty'], 5); // ищем пользователя
+		add_action('woocommerce_order_items_table', [new Counterparty(), 'counterparty'], 5); // проверяем/обновляем/создаём пользователя
 		add_action('woocommerce_order_items_table', [new Customerorder(), 'customerorder'], 10); // создаём заказ
 	}
+
+
 }
 
 

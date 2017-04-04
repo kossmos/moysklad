@@ -13,7 +13,7 @@ class Config {
 
 	/**
 	 * Дополнительные поля контрагентов
-	 * @return [array] [массив дополнительных полей контрагентов]
+	 * @return [array]
 	 */
 	public function attributes() {
 		return [
@@ -52,6 +52,17 @@ class Config {
 				'name' => 'Улица',
 				'type' => 'string'
 			],
+		];
+	}
+
+	/**
+	 * Группы (tags) контрагентов
+	 * @return [array]
+	 */
+	public function tags() {
+		return [
+			'розничный покупатель',
+			'сайт'
 		];
 	}
 

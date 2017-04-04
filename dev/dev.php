@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace MoySklad\Dev;
 
@@ -6,6 +6,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 
 class Dev {
+
+
 	static function test() {
 		echo __NAMESPACE__ . ' > ' . __CLASS__;
 	}
@@ -25,8 +27,8 @@ class Dev {
 
 		file_put_contents(WP_CONTENT_DIR . '/debug-moysclad.log', date('r') . ': ' . var_export($return, true) . "\n\n", LOCK_EX);
 		// debug_log_filter(, WP_CONTENT_DIR . '/debug-moysclad.log', true);
-		
-		self::JSONError();
+
+		// self::JSONError();
 	}
 
 	static function JSONError() {
@@ -56,4 +58,6 @@ class Dev {
 
 		echo PHP_EOL;
 	}
+
+
 }
