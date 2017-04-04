@@ -35,14 +35,16 @@ class Counterparty {
 		$curl = new Curl();
 		$data = $this->dataNewUser($order);
 
-		$result = $curl->init('/entity/' . __FUNCTION__ . '?search=' . $order->billing_email);
+		$resultSearch = $curl->init('/entity/' . __FUNCTION__ . '?search=email=' . $order->billing_email); // ищем пользователя по email
 
-		if ($result['meta']['size'] == 0) : // создаём нового пользователя
-			$curl->init('/entity/' . __FUNCTION__, 'post', $data);
+		if ($resultSearch['meta']['size'] == 0) : // создаём нового пользователя
+			$resultAddNewUser = $curl->init('/entity/' . __FUNCTION__, 'post', $data);
+
+			self::$customerorderUserId = $resultAddNewUser['id']; // получаем id нового пользователя и записываем
 		else : // обновляем пользователя
-			self::$customerorderUserId = $result['rows'][0]['id'];
+			self::$customerorderUserId = $resultSearch['rows'][0]['id']; // записываем id найденного пользователя
 
-			$curl->init('/entity/' . __FUNCTION__ . '/' . self::$customerorderUserId, 'put', $data); // обновляем пользователя
+			$curl->init('/entity/' . __FUNCTION__ . '/' . self::$customerorderUserId, 'put', $data); // обновляем данные пользователя
 		endif;
 	}
 
@@ -61,6 +63,7 @@ class Counterparty {
 			'phone' => $order->billing_phone,
 			'actualAddress' => trim($order->billing_postcode . ', ' . $order->billing_state . ', ' . $country . ', ' . $order->billing_city . ', ' . $order->billing_address_1 . ', ' . $order->billing_address_2, ', \t\n\r\0\x0B'),
 			'tags' => $this->tags,
+			'companyType' => 'individual',
 			'attributes' => []
 		];
 

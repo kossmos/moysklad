@@ -43,9 +43,10 @@ class Curl {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
 		// Dev::logDisplay($ch);
-		Dev::logFile($ch);
 
 		$return = curl_exec($ch);
+
+		Dev::logFile($return);
 
 		curl_close($ch);
 

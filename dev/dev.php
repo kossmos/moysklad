@@ -22,10 +22,10 @@ class Dev {
 		echo '</pre>';
 	}
 
-	static function logFile($ch) {
-		$return = json_decode(curl_exec($ch));
+	static function logFile($return) {
+		$return = json_decode($return);
 
-		file_put_contents(WP_CONTENT_DIR . '/debug-moysclad.log', date('r') . ': ' . var_export($return, true) . "\n\n", LOCK_EX);
+		file_put_contents(WP_CONTENT_DIR . '/debug-moysclad.log', date('r') . ': ' . var_export($return, true) . "\n\n", FILE_APPEND | LOCK_EX);
 		// debug_log_filter(, WP_CONTENT_DIR . '/debug-moysclad.log', true);
 
 		// self::JSONError();
