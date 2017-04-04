@@ -1,4 +1,6 @@
 # Moy Sklad
-Wordpress плагин для интеграции moysklad api
 
-v 1.0
+Wordpress плагин для интеграции сервиса МойСклад (moysklad) с магазином на WooCommerce
+Ограниченный функционал под свои нужды.
+
+v 0.0.5
