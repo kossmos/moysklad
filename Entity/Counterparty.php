@@ -34,6 +34,7 @@ class Counterparty {
 	public function counterparty($order) {
 		$curl = new Curl();
 		$data = $this->dataNewUser($order);
+		Curl::$userEmail = $order->billing_email; // сохраняю email текущего пользователя, для логов
 
 		$resultSearch = $curl->init('/entity/' . __FUNCTION__ . '?search=email=' . $order->billing_email); // ищем пользователя по email
 
