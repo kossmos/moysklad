@@ -22,8 +22,8 @@ class Dev {
 		self::file('curl', $data);
 	}
 
-	static function logFile($return, $url) {
-		$data = date('r') . ': ' . "\n" . 'url:' . $url . "\n" . var_export($return, true) . "\n\n";
+	static function logFile($return, $url, $email) {
+		$data = date('r') . ': ' . "\n" . 'url:' . $url. "\n" . 'email:' . $email . "\n" . var_export($return, true) . "\n\n";
 
 		self::file('all', $data);
 	}

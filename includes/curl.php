@@ -60,7 +60,7 @@ class Curl {
 		curl_close($ch);
 		$return = json_decode($return, true);
 
-		Dev::logFile($return);
+		Dev::logFile($return, $info['url'], self::$userEmail);
 
 		/**
 		 * Если MoySklad вернул сообщение с ошибкой
